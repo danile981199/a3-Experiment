@@ -18,8 +18,6 @@
       margin: 20px;
     }
     .bubble {
-      fill: steelblue;
-      opacity: 0.7;
     }
   </style>
 </head>
@@ -30,20 +28,31 @@
   <div class="chart" id="chart2"></div>
 </div>
 
+<div id="input-container">
+  <label for="perceived-difference">Perceived Difference:</label>
+  <input type="number" id="perceived-difference" placeholder="Enter perceived difference">
+  <button onclick="calculateAndDisplayError()">Calculate Error</button>
+  <p id="error-output"></p>
+</div>
+
 <script>
+  // Function to generate random data for the bubble charts
+  function generateRandomData() {
+  return Array.from({ length: 3 }, (_, index) => ({
+    x: Math.random() * (300 - 100) + 100,
+    y: Math.random() * (150 - 100) + 100,
+    r: Math.random() * 50,
+    t: Math.random(),
+   e: index === 1 ? "a" : undefined,
+  }));
+}
+
+
   // Sample data for the first chart
-  const data1 = [
-    { x: 100, y: 105, r: 20, t: 0.3 },
-    { x: 200, y: 150, r: 45, t: 0.9 ,e:"a"},
-    { x: 330, y: 120, r: 30, t: 0.3 },
-  ];
+  const data1 = generateRandomData();
 
   // Sample data for the second chart
-  const data2 = [
-    { x: 150, y: 120, r: 21, t: 0.7 },
-    { x: 220, y: 150, r: 30, t: 0.4, },
-    { x: 300, y: 100, r: 45, t: 0.2,e:"b"},
-  ];
+  const data2 = generateRandomData();
 
   // Set up the SVG container for the rectangle
   const rectWidth = 700;
@@ -91,8 +100,9 @@
     .attr('class', 'bubble')
     .attr('cx', d => xScale(d.x))
     .attr('cy', d => yScale(d.y))
-    .attr('r', d => d.r)
-    .attr('opacity', d => d.t);
+    .attr('r', d => (d.e === "a" ? Math.max(10, d.r) : d.r))
+    .attr('fill', d => (d.e === "a" ? 'red' : 'blue'))
+    .attr('opacity', d => (d.e === "a" ? 1 : (0.3 + 0.4 * d.t)));
 
   const text1 = svg1.selectAll('text')
     .data(data1)
@@ -103,8 +113,6 @@
     .text(d => d.e)
     .attr('dy', -15);
 
-
-
   // Create circles for the second chart inside the rectangle
   const circles2 = svg2.selectAll('circle')
     .data(data2)
@@ -112,8 +120,9 @@
     .attr('class', 'bubble')
     .attr('cx', d => xScale(d.x))
     .attr('cy', d => yScale(d.y))
-    .attr('r', d => d.r)
-    .attr('opacity', d => d.t);
+    .attr('r', d => (d.e === "a" ? Math.max(10, d.r) : d.r))
+    .attr('fill', d => (d.e === "a" ? 'red' : 'blue'))
+    .attr('opacity', d => (d.e === "a" ? 1 : (0.3 + 0.4 * d.t)));
 
   const text2 = svg2.selectAll('text')
     .data(data2)
@@ -123,6 +132,23 @@
     .attr('y', d => yScale(d.y))
     .text(d => d.e)
     .attr('dy', -15);
+
+  function calculateAndDisplayError() {
+    const perceivedDifference = parseFloat(document.getElementById('perceived-difference').value);
+
+
+    const trueDifference = Math.abs(markedData1[0].r - markedData2[0].r);
+
+    
+    const error = Math.abs(perceivedDifference - trueDifference);
+
+   
+    const scaledError = Math.log2(1 + error / trueDifference);
+
+    // Display the result
+     document.getElementById('perceived-output').innerText = `Perceived Difference: ${perceivedDifference}`;
+    document.getElementById('true-output').innerText = `True Difference: ${trueDifference}`;
+  }
 
 </script>
 
