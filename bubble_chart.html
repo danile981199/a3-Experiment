@@ -17,8 +17,7 @@
       height: 200px;
       margin: 20px;
     }
-    .bubble {
-    }
+
   </style>
 </head>
 <body>
@@ -32,7 +31,10 @@
   <label for="perceived-difference">Perceived Difference:</label>
   <input type="number" id="perceived-difference" placeholder="Enter perceived difference">
   <button onclick="calculateAndDisplayError()">Calculate Error</button>
-  <p id="error-output"></p>
+  <p id="perceived-output"></p>
+  <p id="true-output"></p>
+  <p id="scaled-error-output"></p>
+
 </div>
 
 <script>
@@ -136,20 +138,29 @@
   function calculateAndDisplayError() {
     const perceivedDifference = parseFloat(document.getElementById('perceived-difference').value);
 
+    const markedData1 = data1.filter(d => d.e === 'a'); // Assuming 'a' represents the red bubble
+    const markedData2 = data2.filter(d => d.e === 'a');
 
-    const trueDifference = Math.abs(markedData1[0].r - markedData2[0].r);
+  // Check if there is marked data for both charts
+  if (markedData1.length === 1 && markedData2.length === 1) {
+    // Calculate the true difference between the two red bubbles' radii
+    const trueDifference = Math.abs((markedData1[0].r / markedData2[0].r)*50) ;
 
-    
-    const error = Math.abs(perceivedDifference - trueDifference);
+    // Calculate the error as the absolute difference between perceived and true difference
+    const error = Math.abs(perceivedDifference- trueDifference);
 
-   
-    const scaledError = Math.log2(1 + error / trueDifference);
+    // Scale the error using Cleveland and McGill’s log-base-2 error equation
+    const scaledError = Math.log2(1/8+ error);
 
     // Display the result
-     document.getElementById('perceived-output').innerText = `Perceived Difference: ${perceivedDifference}`;
+    document.getElementById('perceived-output').innerText = `Perceived Difference: ${perceivedDifference}`;
     document.getElementById('true-output').innerText = `True Difference: ${trueDifference}`;
+    document.getElementById('scaled-error-output').innerText = `Scaled Error: ${scaledError}`;
+  } else {
+    // Handle the case where the marked data is not available for both charts
+    console.error("Error: Unable to find marked data for both charts.");
   }
-
+}
 </script>
 
 </body>
